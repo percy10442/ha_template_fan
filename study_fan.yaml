@@ -1,0 +1,139 @@
+fan:
+  - platform: template
+    fans:
+      study_fan:
+        friendly_name: "書房電風扇"
+        value_template: "{{ states('input_boolean.study_fan_state') }}"
+        percentage_template: "{{ states('input_number.study_fan_speed_percent')|float }}"
+        turn_on:
+          service: script.study_fan_on
+        turn_off:
+          service: script.study_fan_off
+        set_percentage:
+          service: script.study_fan_set_speed_percent
+          data:
+            percentage: "{{ percentage }}"
+        speed_count: 5
+input_number:
+  study_fan_speed_percent:
+    name: Study Room Fan Speed Percent
+    initial: 0
+    min: 0
+    max: 100
+    step: 20
+input_boolean:
+  study_fan_state:
+    name: Study Room Fan State
+script:
+    study_fan_off:
+      alias: Study room Fan Off
+      sequence:
+        - service: remote.send_command
+          target:
+              entity_id: remote.shu_fang_yao_kong_remote
+          data:
+            command: b64:sgCiAAUjBSIaDxkPBcIZEAQjBSIZDwYiBSQYDxkQBCMZDxkQGA8YEAQkGA8ZDwUjBSMFIwUjBSMEJBkPGBAEwxkOBiMEIxkQBCMFIxkPGQ8FIxkPGQ4ZDxkPBSMZDxkPBSMFIgUjBSMGIwQjGQ8ZDwXCGQ8FIwUkGA8FIwUiGg8ZDwQkGBAYDxkRFxAEJBgPGQ8EJAQkBCMFIwUjBSMZDxkQBAAF3AAAAAAAAA==
+        - service: input_boolean.turn_off
+          data:
+            entity_id: input_boolean.study_fan_state       
+    study_fan_on:
+      alias: Study room Fan On
+      sequence:
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.study_fan_state
+        - service: switch.turn_on
+          target:
+            entity_id: switch.0x54ef44100001154b_channel_1
+        - delay:
+            milliseconds: 1000
+        - service: remote.send_command
+          target:
+              entity_id: remote.shu_fang_yao_kong_remote
+          data:
+            command: b64:sgCiAAUjBSIaDxkPBcIZEAQjBSIZDwYiBSQYDxkQBCMZDxkQGA8YEAQkGA8ZDwUjBSMFIwUjBSMEJBkPGBAEwxkOBiMEIxkQBCMFIxkPGQ8FIxkPGQ4ZDxkPBSMZDxkPBSMFIgUjBSMGIwQjGQ8ZDwXCGQ8FIwUkGA8FIwUiGg8ZDwQkGBAYDxkRFxAEJBgPGQ8EJAQkBCMFIwUjBSMZDxkQBAAF3AAAAAAAAA==
+    study_fan_set_speed_percent:
+      alias: Study room Fan Set Percentage
+      sequence:
+        - service: input_number.set_value
+          entity_id: input_number.study_fan_speed_percent
+          data:
+            value: "{{ percentage }}"
+        - delay:
+            milliseconds: 500
+        - service: >
+            {% if states("input_number.study_fan_speed_percent")|int == 20 %}
+              script.study_fan_1
+            {% elif states("input_number.study_fan_speed_percent")|int == 40 %}
+              script.study_fan_2
+            {% elif states("input_number.study_fan_speed_percent")|int == 60 %}
+              script.study_fan_3
+            {% elif states("input_number.study_fan_speed_percent")|int == 80 %}
+              script.study_fan_4
+            {% elif states("input_number.study_fan_speed_percent")|int == 100 %}
+              script.study_fan_5
+            {% else %}
+              script.study_fan_off
+            {% endif %}
+        - service: >
+            {% if states("input_number.study_fan_speed_percent")|int == 20 %}
+              input_boolean.turn_on
+            {% elif states("input_number.study_fan_speed_percent")|int == 40 %}
+              input_boolean.turn_on
+            {% elif states("input_number.study_fan_speed_percent")|int == 60 %}
+              input_boolean.turn_on
+            {% elif states("input_number.study_fan_speed_percent")|int == 80 %}
+              input_boolean.turn_on
+            {% elif states("input_number.study_fan_speed_percent")|int == 100 %}
+              input_boolean.turn_on
+            {% elif is_state('switch.0x54ef44100001154b_channel_1', 'off') %}
+              input_boolean.turn_off
+            {% else %}
+              input_boolean.turn_off
+            {% endif %}
+          entity_id: input_boolean.study_fan_state   
+    study_fan_1:
+      sequence:
+        - service: remote.send_command
+          target:
+              entity_id: remote.shu_fang_yao_kong_remote
+          data:
+            command: b64:sjEyAB4MCSAJIB0MCSAJIB4MHQwJIB0MHQwdDB0MCSAdDB0MHQwKHwogCSAJIB4MCSAeDAm/AAAAAAAA
+    study_fan_2:
+      sequence:
+        - service: remote.send_command
+          target:
+              entity_id: remote.shu_fang_yao_kong_remote
+          data:
+            command: b64:sgD+AAbBGhAEIwUiGg4GIgYjGBAZDgUjGQ8ZDxkOGg4GIhoOGg4FIgYiBiMFIhoOBiIaDwQjBcIaDgYiBSIaDwUjBSIaDxkPBSIZDxoOGRAYDwUjGQ8ZEAQjBCMFIwUkGBAEIxkPBSMFwhkOBiIGIxkOBSMGIhkPGQ8FIxkPGQ8ZDxkPBSIZDhoPBSMFIgYiBiIZEAQjGQ8FIwXCGQ8FIwUjGQ8FIwUiGg4ZDwYiGRAYDxkPGRAEJBgPGQ8EIwUjBSQEIxkPBSIZEAQkBcEaDwUiBSMZDwUjBSIaDxkPBSIaDhkPGQ8ZDwUiGg8ZDgYjBSIFIwUjGQ8FIxkPBSIGAAXcAAAAAAAAAAAAAA==
+    study_fan_3:
+      sequence:
+        - service: remote.send_command
+          target:
+              entity_id: remote.shu_fang_yao_kong_remote
+          data:
+            command: b64:sgCAABgQBSIZEBgSBCMFIwUjBSQEIxkPGRAEJATCGRAEIwUjGQ8FIgYjGQ4aDgUjGQ8ZDxkPGQ8FIxkPGBAFIgUjBSMFIgYiGRAYEAUiBcMZDwUjBCQYEAQjBSMZDxkPBSMZDhkRFxAYEAQkGBEXDwUkBCUEIwUkBCMZDxkPBSMFAAXcAAAAAAAAAAA=
+    study_fan_4:
+      sequence:
+        - service: remote.send_command
+          target:
+              entity_id: remote.shu_fang_yao_kong_remote
+          data:
+            command: b64:sgCoAAYiBiMEIxkPBSMFIxkOBsIaDgUjBSIaDwUjBSIaDxkOBiIZDxkQGA8ZDwUjGQ8ZDgYiBSQEIwUjGRAEIwUjGQ8FwhkPBSIGIhoPBSIFIxoOGQ8FIxkPGQ8ZDxkPBSIaDxgPBSIGIwUiBiMZDwUjBSIaDgXCGg8FIgUkGA8FIwUjGQ8ZDwUjGQ8ZDxkOGRAEJBgPGRAEIwUjBSMFIxgPBSMFIxkPBQAF3A==
+    study_fan_5:
+      sequence:
+        - service: remote.send_command
+          target:
+              entity_id: remote.shu_fang_yao_kong_remote
+          data:
+            command: b64:sgD+AAbCGQ8FIwUjGQ8FIwQjGQ8ZEAQjGQ8ZDxkQGA8FIhkQGBEEIwUlBCMFIwUiBiMYEAQjBcMYEAUjBCQYEAQjBSQYEBgQBCQYDxgQGBAYEQQkGBAYEAQjBCUEJAQkBCQEJRcRBCQEwxgRBCMFIxkQBCQEJRcRFxAEJBgPGRAYDxkPBSMZDxgQBCQEJAQkBCQEIwUkFxAEJATDGRAEJAUjGBAEJQQkGBIWEQQkFxEYERYSFhEEJRcSFhEEJQQkBCQEJAQkBCQYEQQkBMMYEgQkBCMZDwUjBSQXEBgQBCQYEBgQGBAYEAQkFxAZDwQkBCMFJAQkBCMFIxkPBCQFAAXcAAAAAAAAAAAAAA==
+    study_fan_onfromzero:
+      sequence:
+        - service: input_number.set_value
+          entity_id: input_number.study_fan_speed_percent
+          data:
+            value: "60"
+        - service: remote.send_command
+          target:
+              entity_id: remote.shu_fang_yao_kong_remote
+          data:
+            command: b64:JgBYAAABKpcRFREUEhMSFBEUEhQRFREUEToRORI5EjoROREVETkSORI5EhMSOhEUEjkRFBIUETkSFBE6EhMSORIUETkSOhEUEgAFWAABKk0RAAyDAAEqTREADQU=
