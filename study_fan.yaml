@@ -46,11 +46,15 @@ script:
             entity_id: switch.0x54ef44100001154b_channel_1
         - delay:
             milliseconds: 1000
+        - service: input_number.set_value
+          entity_id: input_number.study_fan_speed_percent
+          data:
+            value: "60"
         - service: remote.send_command
           target:
               entity_id: remote.shu_fang_yao_kong_remote
           data:
-            command: b64:sgCiAAUjBSIaDxkPBcIZEAQjBSIZDwYiBSQYDxkQBCMZDxkQGA8YEAQkGA8ZDwUjBSMFIwUjBSMEJBkPGBAEwxkOBiMEIxkQBCMFIxkPGQ8FIxkPGQ4ZDxkPBSMZDxkPBSMFIgUjBSMGIwQjGQ8ZDwXCGQ8FIwUkGA8FIwUiGg8ZDwQkGBAYDxkRFxAEJBgPGQ8EJAQkBCMFIwUjBSMZDxkQBAAF3AAAAAAAAA==
+            command: b64:sgCAABgQBSIZEBgSBCMFIwUjBSQEIxkPGRAEJATCGRAEIwUjGQ8FIgYjGQ4aDgUjGQ8ZDxkPGQ8FIxkPGBAFIgUjBSMFIgYiGRAYEAUiBcMZDwUjBCQYEAQjBSMZDxkPBSMZDhkRFxAYEAQkGBEXDwUkBCUEIwUkBCMZDxkPBSMFAAXcAAAAAAAAAAA=
     study_fan_set_speed_percent:
       alias: Study room Fan Set Percentage
       sequence:
@@ -85,12 +89,11 @@ script:
               input_boolean.turn_on
             {% elif states("input_number.study_fan_speed_percent")|int == 100 %}
               input_boolean.turn_on
-            {% elif is_state('switch.0x54ef44100001154b_channel_1', 'off') %}
-              input_boolean.turn_off
             {% else %}
               input_boolean.turn_off
             {% endif %}
-          entity_id: input_boolean.study_fan_state   
+          target:
+            entity_id: input_boolean.study_fan_state   
     study_fan_1:
       sequence:
         - service: remote.send_command
@@ -126,14 +129,3 @@ script:
               entity_id: remote.shu_fang_yao_kong_remote
           data:
             command: b64:sgD+AAbCGQ8FIwUjGQ8FIwQjGQ8ZEAQjGQ8ZDxkQGA8FIhkQGBEEIwUlBCMFIwUiBiMYEAQjBcMYEAUjBCQYEAQjBSQYEBgQBCQYDxgQGBAYEQQkGBAYEAQjBCUEJAQkBCQEJRcRBCQEwxgRBCMFIxkQBCQEJRcRFxAEJBgPGRAYDxkPBSMZDxgQBCQEJAQkBCQEIwUkFxAEJATDGRAEJAUjGBAEJQQkGBIWEQQkFxEYERYSFhEEJRcSFhEEJQQkBCQEJAQkBCQYEQQkBMMYEgQkBCMZDwUjBSQXEBgQBCQYEBgQGBAYEAQkFxAZDwQkBCMFJAQkBCMFIxkPBCQFAAXcAAAAAAAAAAAAAA==
-    study_fan_onfromzero:
-      sequence:
-        - service: input_number.set_value
-          entity_id: input_number.study_fan_speed_percent
-          data:
-            value: "60"
-        - service: remote.send_command
-          target:
-              entity_id: remote.shu_fang_yao_kong_remote
-          data:
-            command: b64:JgBYAAABKpcRFREUEhMSFBEUEhQRFREUEToRORI5EjoROREVETkSORI5EhMSOhEUEjkRFBIUETkSFBE6EhMSORIUETkSOhEUEgAFWAABKk0RAAyDAAEqTREADQU=
